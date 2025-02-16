@@ -390,10 +390,10 @@ export default function Home() {
             <MainLogo />
             <h1 className="text-2xl font-bold">Planificador de Menú</h1>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex gap-4 flex-wrap justify-end items-center space-x-4">
             <Button
               variant="ghost"
-              className="text-white hover:text-[#ff7900]"
+              className="text-white  border-2 hover:text-[#ff7900]"
               onClick={handleSaveMenu}
             >
               <Save className="mr-2 h-4 w-4" />
@@ -409,7 +409,7 @@ export default function Home() {
                 {({ loading }) => (
                   <Button
                     variant="ghost"
-                    className="text-white hover:text-[#ff7900]"
+                    className="text-white  border-2 hover:text-[#ff7900]"
                     disabled={loading}
                   >
                     <FileDown className="mr-2 h-4 w-4" />
