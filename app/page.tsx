@@ -62,7 +62,7 @@ interface MenuItem {
 }
 
 interface MenuDay {
-  date: Date;
+  date: string; // Change date type to string
   items: MenuItem[];
 }
 
@@ -115,15 +115,8 @@ const MenuPDF = ({
       <View style={pdfStyles.section}>
         <Text style={pdfStyles.sectionTitle}>Platillos</Text>
         {menuDays.map((day) => (
-          <View key={day.date.toISOString()} style={pdfStyles.item}>
-            <Text>
-              {day.date.toLocaleDateString("es-ES", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </Text>
+          <View key={day.date} style={pdfStyles.item}>
+            <Text>{day.date}</Text>
             {day.items.map((item) => (
               <Text key={item.id}>
                 - {item.name} ({item.guests} personas) - {item.time}
@@ -145,6 +138,27 @@ const MenuPDF = ({
     </Page>
   </Document>
 );
+
+const daysOfWeek = [
+  "lunes",
+  "martes",
+  "miércoles",
+  "jueves",
+  "viernes",
+  "sábado",
+  "domingo",
+];
+
+const getDaysInRange = (dateRange: DateRange | undefined) => {
+  if (!dateRange?.from || !dateRange?.to) return [];
+  const days = [];
+  let currentDate = new Date(dateRange.from);
+  while (currentDate <= dateRange.to) {
+    days.push(currentDate.toLocaleDateString("es-ES", { weekday: "long" }));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return days;
+};
 
 export default function Home() {
   const [date, setDate] = useState<DateRange | undefined>({
@@ -169,6 +183,9 @@ export default function Home() {
 
   const [isEditDishOpen, setIsEditDishOpen] = useState(false);
   const [dishToEdit, setDishToEdit] = useState<MenuItem | null>(null);
+  const [currentDayOfWeek, setCurrentDayOfWeek] = useState<string | undefined>(
+    undefined
+  );
 
   const getNextMonday = (date: Date) => {
     const day = date.getDay();
@@ -226,39 +243,22 @@ export default function Home() {
       time: currentTime,
     };
 
-    if (!date?.from || !date?.to) {
-      toast({
-        title: "Rango de fechas no seleccionado",
-        description: "Por favor selecciona un rango de fechas",
-        variant: "destructive",
-      });
-      return;
-    }
+    const selectedDay =
+      currentDayOfWeek ||
+      getDaysInRange(date)[menuDays.length % getDaysInRange(date).length];
 
-    const daysInRange = [];
-    let currentDate = new Date(date.from);
-    while (currentDate <= date.to) {
-      daysInRange.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    const dayIndex = menuDays.length % daysInRange.length;
-    const selectedDate = daysInRange[dayIndex];
-
-    const existingDay = menuDays.find(
-      (day) => day.date.toDateString() === selectedDate.toDateString()
-    );
+    const existingDay = menuDays.find((day) => day.date === selectedDay);
 
     if (existingDay) {
       setMenuDays(
         menuDays.map((day) =>
-          day.date.toDateString() === selectedDate.toDateString()
+          day.date === selectedDay
             ? { ...day, items: [...day.items, newDish] }
             : day
         )
       );
     } else {
-      setMenuDays([...menuDays, { date: selectedDate, items: [newDish] }]);
+      setMenuDays([...menuDays, { date: selectedDay, items: [newDish] }]);
     }
 
     setCurrentDishName("");
@@ -382,6 +382,16 @@ export default function Home() {
     });
   };
 
+  const handleDateRangeChange = (newDateRange: DateRange) => {
+    setDate(newDateRange);
+    const updatedMenuDays = menuDays.map((day) => {
+      const newDate = new Date(newDateRange.from);
+      newDate.setDate(newDate.getDate() + daysOfWeek.indexOf(day.date));
+      return { ...day, date: newDate };
+    });
+    setMenuDays(updatedMenuDays);
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <nav className="bg-[#1f2937] text-white p-4 shadow-lg">
@@ -447,7 +457,7 @@ export default function Home() {
                 <Calendar
                   mode="range"
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={handleDateRangeChange}
                   locale={es}
                   className="rounded-md border"
                 />
@@ -467,14 +477,9 @@ export default function Home() {
                     </div>
                   ) : (
                     menuDays.map((day, dayIndex) => (
-                      <div key={day.date.toISOString()} className="mb-6">
+                      <div key={day.date} className="mb-6">
                         <h3 className="font-medium text-gray-700 mb-2">
-                          {day.date.toLocaleDateString("es-ES", {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
+                          {day.date}
                         </h3>
                         {day.items.map((item) => (
                           <div
@@ -608,6 +613,25 @@ export default function Home() {
                 value={currentTime}
                 onChange={(e) => setCurrentTime(e.target.value)}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dayOfWeek">Día de la Semana</Label>
+              <Select
+                id="dayOfWeek"
+                value={currentDayOfWeek}
+                onValueChange={(value) => setCurrentDayOfWeek(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un día" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getDaysInRange(date).map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <SheetFooter className="mt-6">
