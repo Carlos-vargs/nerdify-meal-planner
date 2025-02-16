@@ -235,15 +235,26 @@ export default function Home() {
       return;
     }
 
-    const selectedDate = new Date(date.from);
-    const dayIndex = menuDays.findIndex(
+    const daysInRange = [];
+    let currentDate = new Date(date.from);
+    while (currentDate <= date.to) {
+      daysInRange.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    const dayIndex = menuDays.length % daysInRange.length;
+    const selectedDate = daysInRange[dayIndex];
+
+    const existingDay = menuDays.find(
       (day) => day.date.toDateString() === selectedDate.toDateString()
     );
 
-    if (dayIndex !== -1) {
+    if (existingDay) {
       setMenuDays(
-        menuDays.map((day, index) =>
-          index === dayIndex ? { ...day, items: [...day.items, newDish] } : day
+        menuDays.map((day) =>
+          day.date.toDateString() === selectedDate.toDateString()
+            ? { ...day, items: [...day.items, newDish] }
+            : day
         )
       );
     } else {
