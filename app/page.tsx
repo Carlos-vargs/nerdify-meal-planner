@@ -170,6 +170,33 @@ export default function Home() {
   const [isEditDishOpen, setIsEditDishOpen] = useState(false);
   const [dishToEdit, setDishToEdit] = useState<MenuItem | null>(null);
 
+  const getNextMonday = (date: Date) => {
+    const day = date.getDay();
+    const diff = day === 0 ? 1 : 8 - day;
+    return new Date(date.setDate(date.getDate() + diff));
+  };
+
+  const getNextFriday = (date: Date) => {
+    const nextMonday = getNextMonday(date);
+    return new Date(nextMonday.setDate(nextMonday.getDate() + 4));
+  };
+
+  const initializeDateRange = () => {
+    const today = new Date();
+    if (today.getDay() === 6 || today.getDay() === 0) {
+      const nextMonday = getNextMonday(today);
+      const nextFriday = getNextFriday(nextMonday);
+      setDate({ from: nextMonday, to: nextFriday });
+    } else {
+      const nextFriday = getNextFriday(today);
+      setDate({ from: today, to: nextFriday });
+    }
+  };
+
+  useState(() => {
+    initializeDateRange();
+  }, []);
+
   const handleCreateMenu = () => {
     if (!date?.from || !date?.to) {
       toast({
@@ -199,21 +226,28 @@ export default function Home() {
       time: currentTime,
     };
 
-    const today = new Date();
-    const existingDay = menuDays.find(
-      (day) => day.date.toDateString() === today.toDateString()
+    if (!date?.from || !date?.to) {
+      toast({
+        title: "Rango de fechas no seleccionado",
+        description: "Por favor selecciona un rango de fechas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const selectedDate = new Date(date.from);
+    const dayIndex = menuDays.findIndex(
+      (day) => day.date.toDateString() === selectedDate.toDateString()
     );
 
-    if (existingDay) {
+    if (dayIndex !== -1) {
       setMenuDays(
-        menuDays.map((day) =>
-          day.date.toDateString() === today.toDateString()
-            ? { ...day, items: [...day.items, newDish] }
-            : day
+        menuDays.map((day, index) =>
+          index === dayIndex ? { ...day, items: [...day.items, newDish] } : day
         )
       );
     } else {
-      setMenuDays([...menuDays, { date: today, items: [newDish] }]);
+      setMenuDays([...menuDays, { date: selectedDate, items: [newDish] }]);
     }
 
     setCurrentDishName("");
