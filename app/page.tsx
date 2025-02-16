@@ -22,6 +22,7 @@ import {
   Utensils,
   History,
   Save,
+  Edit,
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { es } from "date-fns/locale";
@@ -166,6 +167,9 @@ export default function Home() {
   });
   const { toast } = useToast();
 
+  const [isEditDishOpen, setIsEditDishOpen] = useState(false);
+  const [dishToEdit, setDishToEdit] = useState<MenuItem | null>(null);
+
   const handleCreateMenu = () => {
     if (!date?.from || !date?.to) {
       toast({
@@ -260,6 +264,32 @@ export default function Home() {
         return day;
       })
     );
+  };
+
+  const handleEditDish = (dayIndex: number, dishId: string) => {
+    const dish = menuDays[dayIndex].items.find((item) => item.id === dishId);
+    if (dish) {
+      setDishToEdit(dish);
+      setIsEditDishOpen(true);
+    }
+  };
+
+  const handleUpdateDish = () => {
+    if (dishToEdit) {
+      setMenuDays(
+        menuDays.map((day) => ({
+          ...day,
+          items: day.items.map((item) =>
+            item.id === dishToEdit.id ? dishToEdit : item
+          ),
+        }))
+      );
+      setIsEditDishOpen(false);
+      toast({
+        title: "Platillo editado",
+        description: "El platillo se ha editado correctamente",
+      });
+    }
   };
 
   const handleRemoveIngredient = (ingredientId: string) => {
@@ -418,16 +448,28 @@ export default function Home() {
                                   <span>{item.time}</span>
                                 </div>
                               </div>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() =>
-                                  handleRemoveDish(dayIndex, item.id)
-                                }
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex space-x-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    handleEditDish(dayIndex, item.id)
+                                  }
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    handleRemoveDish(dayIndex, item.id)
+                                  }
+                                  className="text-red-500 hover:text-red-700"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -457,7 +499,8 @@ export default function Home() {
                         <div>
                           <h3 className="font-medium mb-2">{menu.name}</h3>
                           <p className="text-sm text-gray-500 mb-4">
-                            {menu.days.length} días, {menu.ingredients.length} ingredientes
+                            {menu.days.length} días, {menu.ingredients.length}{" "}
+                            ingredientes
                           </p>
                         </div>
                         <Button
@@ -665,6 +708,68 @@ export default function Home() {
               </ScrollArea>
             </div>
           </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={isEditDishOpen} onOpenChange={setIsEditDishOpen}>
+        <SheetContent side="right" className="w-full sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Editar Platillo</SheetTitle>
+            <SheetDescription>
+              Modifica los detalles del platillo
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="editDishName">Nombre del Platillo</Label>
+              <Input
+                id="editDishName"
+                value={dishToEdit?.name || ""}
+                onChange={(e) =>
+                  setDishToEdit(
+                    (prev) => prev && { ...prev, name: e.target.value }
+                  )
+                }
+                placeholder="Ej: Pasta al Pesto"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editGuests">Número de Comensales</Label>
+              <Input
+                id="editGuests"
+                type="number"
+                min="1"
+                value={dishToEdit?.guests || 1}
+                onChange={(e) =>
+                  setDishToEdit(
+                    (prev) =>
+                      prev && { ...prev, guests: parseInt(e.target.value) }
+                  )
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editTime">Hora de Servicio</Label>
+              <Input
+                id="editTime"
+                type="time"
+                value={dishToEdit?.time || "12:00"}
+                onChange={(e) =>
+                  setDishToEdit(
+                    (prev) => prev && { ...prev, time: e.target.value }
+                  )
+                }
+              />
+            </div>
+          </div>
+          <SheetFooter className="mt-6">
+            <Button
+              className="w-full bg-[#ff7900] hover:bg-[#e66d00]"
+              onClick={handleUpdateDish}
+            >
+              Guardar Cambios
+            </Button>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
       <Toaster />
