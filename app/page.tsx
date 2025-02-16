@@ -299,6 +299,14 @@ export default function Home() {
     });
   };
 
+  const handleRemoveMenu = (menuId: string) => {
+    setSavedMenus(savedMenus.filter((menu) => menu.id !== menuId));
+    toast({
+      title: "Menú eliminado",
+      description: "El menú se ha eliminado correctamente",
+    });
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <nav className="bg-[#1f2937] text-white p-4 shadow-lg">
@@ -445,11 +453,22 @@ export default function Home() {
                 ) : (
                   savedMenus.map((menu) => (
                     <Card key={menu.id} className="p-4">
-                      <h3 className="font-medium mb-2">{menu.name}</h3>
-                      <p className="text-sm text-gray-500 mb-4">
-                        {menu.days.length} días, {menu.ingredients.length}{" "}
-                        ingredientes
-                      </p>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium mb-2">{menu.name}</h3>
+                          <p className="text-sm text-gray-500 mb-4">
+                            {menu.days.length} días, {menu.ingredients.length} ingredientes
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveMenu(menu.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                       <Button
                         onClick={() => handleLoadMenu(menu)}
                         className="w-full bg-[#ff7900] hover:bg-[#e66d00]"
