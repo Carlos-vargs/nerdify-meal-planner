@@ -54,6 +54,7 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 import MainLogo from "@/components/MainLogo";
+import DishForm from "@/components/DishForm";
 interface MenuItem {
   id: string;
   name: string;
@@ -201,6 +202,8 @@ export default function Home() {
     undefined
   );
 
+  const [isDishFormOpen, setIsDishFormOpen] = useState(false);
+
   const getNextMonday = (date: Date) => {
     const day = date.getDay();
     const diff = day === 0 ? 1 : 8 - day;
@@ -237,29 +240,12 @@ export default function Home() {
       });
       return;
     }
-    setIsCreateMenuOpen(true);
+    setIsDishFormOpen(true);
+    setDishToEdit(null);
   };
 
-  const handleAddDish = () => {
-    if (!currentDishName.trim()) {
-      toast({
-        title: "Nombre requerido",
-        description: "Por favor ingresa el nombre del platillo",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const newDish: MenuItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: currentDishName,
-      guests: currentGuests,
-      time: currentTime,
-    };
-
-    const selectedDay =
-      currentDayOfWeek ||
-      getDaysInRange(date)[menuDays.length % getDaysInRange(date).length];
+  const handleAddDish = (newDish: MenuItem) => {
+    const selectedDay = newDish.date;
 
     const existingDay = menuDays.find((day) => day.date === selectedDay);
 
@@ -279,10 +265,24 @@ export default function Home() {
       );
     }
 
-    setCurrentDishName("");
     toast({
       title: "Platillo agregado",
       description: "El platillo se ha agregado al menú correctamente",
+    });
+  };
+
+  const handleEditDish = (updatedDish: MenuItem) => {
+    setMenuDays(
+      menuDays.map((day) => ({
+        ...day,
+        items: day.items.map((item) =>
+          item.id === updatedDish.id ? updatedDish : item
+        ),
+      }))
+    );
+    toast({
+      title: "Platillo editado",
+      description: "El platillo se ha editado correctamente",
     });
   };
 
@@ -331,29 +331,11 @@ export default function Home() {
     setMenuDays(sortMenuDays(updatedMenuDays));
   };
 
-  const handleEditDish = (dayIndex: number, dishId: string) => {
+  const handleEditDishOpen = (dayIndex: number, dishId: string) => {
     const dish = menuDays[dayIndex].items.find((item) => item.id === dishId);
     if (dish) {
       setDishToEdit(dish);
-      setIsEditDishOpen(true);
-    }
-  };
-
-  const handleUpdateDish = () => {
-    if (dishToEdit) {
-      setMenuDays(
-        menuDays.map((day) => ({
-          ...day,
-          items: day.items.map((item) =>
-            item.id === dishToEdit.id ? dishToEdit : item
-          ),
-        }))
-      );
-      setIsEditDishOpen(false);
-      toast({
-        title: "Platillo editado",
-        description: "El platillo se ha editado correctamente",
-      });
+      setIsDishFormOpen(true);
     }
   };
 
@@ -523,7 +505,7 @@ export default function Home() {
                                   variant="ghost"
                                   size="icon"
                                   onClick={() =>
-                                    handleEditDish(dayIndex, item.id)
+                                    handleEditDishOpen(dayIndex, item.id)
                                   }
                                   className="text-blue-500 hover:text-blue-700"
                                 >
@@ -800,67 +782,14 @@ export default function Home() {
         </SheetContent>
       </Sheet>
 
-      <Sheet open={isEditDishOpen} onOpenChange={setIsEditDishOpen}>
-        <SheetContent side="right" className="w-full sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle>Editar Platillo</SheetTitle>
-            <SheetDescription>
-              Modifica los detalles del platillo
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="editDishName">Nombre del Platillo</Label>
-              <Input
-                id="editDishName"
-                value={dishToEdit?.name || ""}
-                onChange={(e) =>
-                  setDishToEdit(
-                    (prev) => prev && { ...prev, name: e.target.value }
-                  )
-                }
-                placeholder="Ej: Pasta al Pesto"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editGuests">Número de Comensales</Label>
-              <Input
-                id="editGuests"
-                type="number"
-                min="1"
-                value={dishToEdit?.guests || 1}
-                onChange={(e) =>
-                  setDishToEdit(
-                    (prev) =>
-                      prev && { ...prev, guests: parseInt(e.target.value) }
-                  )
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="editTime">Hora de Servicio</Label>
-              <Input
-                id="editTime"
-                type="time"
-                value={dishToEdit?.time || "12:00"}
-                onChange={(e) =>
-                  setDishToEdit(
-                    (prev) => prev && { ...prev, time: e.target.value }
-                  )
-                }
-              />
-            </div>
-          </div>
-          <SheetFooter className="mt-6">
-            <Button
-              className="w-full bg-[#ff7900] hover:bg-[#e66d00]"
-              onClick={handleUpdateDish}
-            >
-              Guardar Cambios
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      <DishForm
+        isOpen={isDishFormOpen}
+        onOpenChange={setIsDishFormOpen}
+        onSubmit={dishToEdit ? handleEditDish : handleAddDish}
+        initialDish={dishToEdit}
+        daysInRange={getDaysInRange(date)}
+        menuDays={menuDays}
+      />
       <Toaster />
     </main>
   );
