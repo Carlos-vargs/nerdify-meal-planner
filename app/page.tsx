@@ -385,7 +385,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       <nav className="bg-[#1f2937] text-white p-4 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl gap-4 flex-col lg:flex-row mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <MainLogo />
             <h1 className="text-2xl font-bold">Planificador de Menú</h1>
