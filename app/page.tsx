@@ -160,6 +160,20 @@ const getDaysInRange = (dateRange: DateRange | undefined) => {
   return days;
 };
 
+const sortMenuDays = (menuDays: MenuDay[]) => {
+  const dayOrder = {
+    lunes: 0,
+    martes: 1,
+    miércoles: 2,
+    jueves: 3,
+    viernes: 4,
+    sábado: 5,
+    domingo: 6,
+  };
+
+  return menuDays.sort((a, b) => dayOrder[a.date] - dayOrder[b.date]);
+};
+
 export default function Home() {
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(),
@@ -251,14 +265,18 @@ export default function Home() {
 
     if (existingDay) {
       setMenuDays(
-        menuDays.map((day) =>
-          day.date === selectedDay
-            ? { ...day, items: [...day.items, newDish] }
-            : day
+        sortMenuDays(
+          menuDays.map((day) =>
+            day.date === selectedDay
+              ? { ...day, items: [...day.items, newDish] }
+              : day
+          )
         )
       );
     } else {
-      setMenuDays([...menuDays, { date: selectedDay, items: [newDish] }]);
+      setMenuDays(
+        sortMenuDays([...menuDays, { date: selectedDay, items: [newDish] }])
+      );
     }
 
     setCurrentDishName("");
@@ -298,8 +316,8 @@ export default function Home() {
   };
 
   const handleRemoveDish = (dayIndex: number, dishId: string) => {
-    setMenuDays(
-      menuDays.map((day, index) => {
+    const updatedMenuDays = menuDays
+      .map((day, index) => {
         if (index === dayIndex) {
           return {
             ...day,
@@ -308,7 +326,9 @@ export default function Home() {
         }
         return day;
       })
-    );
+      .filter((day) => day.items.length > 0); // Remove days with no dishes
+
+    setMenuDays(sortMenuDays(updatedMenuDays));
   };
 
   const handleEditDish = (dayIndex: number, dishId: string) => {
