@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -56,6 +56,7 @@ import {
 import MainLogo from "@/components/MainLogo";
 import DishForm from "@/components/DishForm";
 import MenuPDF from "@/components/MenuPDF";
+import PDFDownloadButton from "@/components/PDFDownloadButton";
 interface MenuItem {
   id: string;
   name: string;
@@ -115,7 +116,11 @@ const sortMenuDays = (menuDays: MenuDay[]) => {
     domingo: 6,
   };
 
-  return menuDays.sort((a, b) => dayOrder[a.date] - dayOrder[b.date]);
+  return menuDays.sort(
+    (a, b) =>
+      dayOrder[a.date as keyof typeof dayOrder] -
+      dayOrder[b.date as keyof typeof dayOrder]
+  );
 };
 
 export default function Home() {
@@ -170,7 +175,7 @@ export default function Home() {
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     initializeDateRange();
   }, []);
 
@@ -187,9 +192,7 @@ export default function Home() {
     setDishToEdit(null);
   };
 
-  const handleAddDish = (newDish: MenuItem) => {
-    const selectedDay = newDish.date;
-
+  const handleAddDish = (newDish: MenuItem, selectedDay: string) => {
     const existingDay = menuDays.find((day) => day.date === selectedDay);
 
     if (existingDay) {
@@ -327,13 +330,21 @@ export default function Home() {
     });
   };
 
-  const handleDateRangeChange = (newDateRange: DateRange) => {
+  const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
     setDate(newDateRange);
+
+    // Only proceed if we have a valid date range
+    if (!newDateRange?.from) return;
+
     const updatedMenuDays = menuDays.map((day) => {
-      const newDate = new Date(newDateRange.from);
+      const newDate = new Date(newDateRange.from!); // We can use ! here because we checked above
       newDate.setDate(newDate.getDate() + daysOfWeek.indexOf(day.date));
-      return { ...day, date: newDate };
+      return {
+        ...day,
+        date: newDate.toLocaleDateString("es-ES", { weekday: "long" }),
+      };
     });
+
     setMenuDays(updatedMenuDays);
   };
 
@@ -355,23 +366,10 @@ export default function Home() {
               Guardar Menú
             </Button>
             {menuDays.length > 0 && (
-              <PDFDownloadLink
-                document={
-                  <MenuPDF menuDays={menuDays} ingredients={ingredients} />
-                }
-                fileName="menu-semanal.pdf"
-              >
-                {({ loading }) => (
-                  <Button
-                    variant="ghost"
-                    className="text-white  border-2 hover:text-[#ff7900]"
-                    disabled={loading}
-                  >
-                    <FileDown className="mr-2 h-4 w-4" />
-                    {loading ? "Generando PDF..." : "Exportar PDF"}
-                  </Button>
-                )}
-              </PDFDownloadLink>
+              <PDFDownloadButton
+                menuDays={menuDays}
+                ingredients={ingredients}
+              />
             )}
           </div>
         </div>
@@ -560,9 +558,8 @@ export default function Home() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dayOfWeek">Día de la Semana</Label>
+              <Label>Día de la Semana</Label>
               <Select
-                id="dayOfWeek"
                 value={currentDayOfWeek}
                 onValueChange={(value) => setCurrentDayOfWeek(value)}
               >
@@ -582,7 +579,7 @@ export default function Home() {
           <SheetFooter className="mt-6">
             <Button
               className="w-full bg-[#ff7900] hover:bg-[#e66d00]"
-              onClick={handleAddDish}
+              onClick={() => handleAddDish(newDish, currentDayOfWeek)}
             >
               Agregar Platillo
             </Button>
