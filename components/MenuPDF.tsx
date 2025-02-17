@@ -65,7 +65,7 @@ const pdfStyles = StyleSheet.create({
     textAlign: "center",
   },
   tableHeaderText: {
-    fontSize: 9,
+    fontSize: 12,
     fontWeight: 800,
     color: "#4b5563",
   },
@@ -80,7 +80,7 @@ const pdfStyles = StyleSheet.create({
     borderRightWidth: 0,
   },
   tableCell: {
-    fontSize: 9,
+    fontSize: 12,
     color: "#4b5563",
   },
   section: {
@@ -96,13 +96,13 @@ const pdfStyles = StyleSheet.create({
     marginBottom: 5,
   },
   emptyMessage: {
-    fontSize: 9,
+    fontSize: 12,
     color: "#6b7280",
     fontStyle: "italic",
     textAlign: "center",
   },
   ingredientItem: {
-    fontSize: 9,
+    fontSize: 12,
     color: "#4b5563",
     marginBottom: 4,
   },
