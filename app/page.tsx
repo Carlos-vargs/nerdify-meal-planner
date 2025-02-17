@@ -55,6 +55,7 @@ import {
 } from "@react-pdf/renderer";
 import MainLogo from "@/components/MainLogo";
 import DishForm from "@/components/DishForm";
+import MenuPDF from "@/components/MenuPDF";
 interface MenuItem {
   id: string;
   name: string;
@@ -81,64 +82,6 @@ interface SavedMenu {
   days: MenuDay[];
   ingredients: Ingredient[];
 }
-
-const pdfStyles = StyleSheet.create({
-  page: {
-    padding: 30,
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  section: {
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  item: {
-    marginBottom: 5,
-  },
-});
-
-const MenuPDF = ({
-  menuDays,
-  ingredients,
-}: {
-  menuDays: MenuDay[];
-  ingredients: Ingredient[];
-}) => (
-  <Document>
-    <Page size="A4" style={pdfStyles.page}>
-      <Text style={pdfStyles.title}>Menú Semanal</Text>
-
-      <View style={pdfStyles.section}>
-        <Text style={pdfStyles.sectionTitle}>Platillos</Text>
-        {menuDays.map((day) => (
-          <View key={day.date} style={pdfStyles.item}>
-            <Text>{day.date}</Text>
-            {day.items.map((item) => (
-              <Text key={item.id}>
-                - {item.name} ({item.guests} personas) - {item.time}
-              </Text>
-            ))}
-          </View>
-        ))}
-      </View>
-
-      <View style={pdfStyles.section}>
-        <Text style={pdfStyles.sectionTitle}>Lista de Compras</Text>
-        {ingredients.map((ingredient) => (
-          <Text key={ingredient.id} style={pdfStyles.item}>
-            - {ingredient.name}: {ingredient.quantity} {ingredient.unit} (
-            {ingredient.dishName})
-          </Text>
-        ))}
-      </View>
-    </Page>
-  </Document>
-);
 
 const daysOfWeek = [
   "lunes",
