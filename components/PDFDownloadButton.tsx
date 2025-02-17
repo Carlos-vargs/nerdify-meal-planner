@@ -19,6 +19,7 @@ const PDFDownloadButton: React.FC<PDFDownloadButtonProps> = ({
       document={<MenuPDF menuDays={menuDays} ingredients={ingredients} />}
       fileName="menu-semanal.pdf"
     >
+      {/* @ts-ignore */}
       {({ loading }) => (
         <Button
           variant="ghost"
