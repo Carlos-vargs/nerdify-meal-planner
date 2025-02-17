@@ -43,7 +43,7 @@ const pdfStyles = StyleSheet.create({
     marginBottom: 12,
   },
   table: {
-    display: "none",
+    display: "flex",
     width: "100%",
     borderStyle: "solid",
     borderColor: "#e5e7eb",
@@ -154,7 +154,7 @@ const MenuPDF = ({ menuDays, ingredients }: MenuPDFProps) => (
                     ]}
                   >
                     <Text style={[pdfStyles.tableCol, pdfStyles.tableCell]}>
-                      {day.date}
+                      {day.time}
                     </Text>
                     <Text style={[pdfStyles.tableCol, pdfStyles.tableCell]}>
                       {item.name}
