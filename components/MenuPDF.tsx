@@ -1,3 +1,4 @@
+import { Ingredient, MenuDay } from "@/types";
 import {
   Document,
   Page,
@@ -42,7 +43,7 @@ const pdfStyles = StyleSheet.create({
     marginBottom: 12,
   },
   table: {
-    display: "table",
+    display: "none",
     width: "100%",
     borderStyle: "solid",
     borderColor: "#e5e7eb",
@@ -149,7 +150,7 @@ const MenuPDF = ({ menuDays, ingredients }: MenuPDFProps) => (
                     key={item.id}
                     style={[
                       pdfStyles.tableRow,
-                      isLastRow && pdfStyles.tableRowLast,
+                      ...(isLastRow ? [pdfStyles.tableRowLast] : []),
                     ]}
                   >
                     <Text style={[pdfStyles.tableCol, pdfStyles.tableCell]}>

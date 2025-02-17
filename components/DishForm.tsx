@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
+import { MenuItem, MenuDay } from "@/types"; // Import the interfaces
 
 interface DishFormProps {
   isOpen: boolean;
@@ -125,9 +126,8 @@ const DishForm = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="dayOfWeek">Día de la Semana</Label>
+            <Label>Día de la Semana</Label>
             <Select
-              id="dayOfWeek"
               value={dayOfWeek}
               onValueChange={(value) => setDayOfWeek(value)}
             >

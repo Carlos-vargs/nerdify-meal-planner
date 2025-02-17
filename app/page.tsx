@@ -57,32 +57,7 @@ import MainLogo from "@/components/MainLogo";
 import DishForm from "@/components/DishForm";
 import MenuPDF from "@/components/MenuPDF";
 import PDFDownloadButton from "@/components/PDFDownloadButton";
-interface MenuItem {
-  id: string;
-  name: string;
-  guests: number;
-  time: string;
-}
-
-interface MenuDay {
-  date: string; // Change date type to string
-  items: MenuItem[];
-}
-
-interface Ingredient {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  dishName: string;
-}
-
-interface SavedMenu {
-  id: string;
-  name: string;
-  days: MenuDay[];
-  ingredients: Ingredient[];
-}
+import { MenuDay, Ingredient, SavedMenu, MenuItem } from "@/types";
 
 const daysOfWeek = [
   "lunes",
@@ -579,7 +554,32 @@ export default function Home() {
           <SheetFooter className="mt-6">
             <Button
               className="w-full bg-[#ff7900] hover:bg-[#e66d00]"
-              onClick={() => handleAddDish(newDish, currentDayOfWeek)}
+              onClick={() => {
+                if (!currentDayOfWeek) {
+                  toast({
+                    title: "Error",
+                    description: "Por favor selecciona un día de la semana",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                const newDish: MenuItem = {
+                  id: Math.random().toString(36).substr(2, 9),
+                  name: currentDishName,
+                  guests: currentGuests,
+                  time: currentTime,
+                };
+
+                handleAddDish(newDish, currentDayOfWeek);
+                setIsCreateMenuOpen(false);
+
+                // Reset form
+                setCurrentDishName("");
+                setCurrentGuests(2);
+                setCurrentTime("12:00");
+                setCurrentDayOfWeek(undefined);
+              }}
             >
               Agregar Platillo
             </Button>
@@ -725,7 +725,11 @@ export default function Home() {
       <DishForm
         isOpen={isDishFormOpen}
         onOpenChange={setIsDishFormOpen}
-        onSubmit={dishToEdit ? handleEditDish : handleAddDish}
+        onSubmit={
+          dishToEdit
+            ? handleEditDish
+            : (dish) => handleAddDish(dish, currentDayOfWeek!)
+        }
         initialDish={dishToEdit}
         daysInRange={getDaysInRange(date)}
         menuDays={menuDays}
